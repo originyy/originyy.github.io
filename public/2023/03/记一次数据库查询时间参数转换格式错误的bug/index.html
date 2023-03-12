@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en-cn">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    
+    <script type="application/ld+json">
+
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "记一次数据库查询时间参数转换格式错误的BUG",
+  
+  "datePublished": "2023-03-12T00:57:52+08:00",
+  "dateModified": "2023-03-12T00:57:52+08:00",
+  "author": {
+    "@type": "Person",
+    "name": "杨dd",
+    
+    "image": "https://www.gravatar.com/avatar/d09dc2d7aa5c467519e8af89f7b3d94c"
+    
+  },
+  "mainEntityOfPage": { 
+    "@type": "WebPage",
+    "@id": "http:\/\/localhost:1313\/2023\/03\/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug\/" 
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "我的开始",
+    
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.gravatar.com/avatar/d09dc2d7aa5c467519e8af89f7b3d94c"
+    }
+    
+  },
+  "description": "数据库：MySQ5.7\n最近新开了一个服务，上线后发现定时任务失效了。\n经排查，发现JPA生成sql的日期参数格式为\u0026quot;dd/MM/yyyy HH:mm:ss\u0026quot;。\n通常数据库查询的时间参数在生成SQL时，格式为\u0026quot;yyyy-MM-dd HH:mm:ss\u0026quot;。\n对源码进行调试，\n发现是调用到了log4jdbc的这个类，正常的应该是这个：\n接着调试，发现\n想要获取到正确的类，需要在驱动名称为com.mysql.jdbc.Driver。当时的驱动名称是com.mysql.cj.jdbc.Driver，所以用的是默认的类（未截图）。\n经排查，发现Mysql连接为\n\u0026lt;!--Mysql依赖包--\u0026gt; \u0026lt;dependency\u0026gt; \u0026lt;groupId\u0026gt;mysql\u0026lt;/groupId\u0026gt; \u0026lt;artifactId\u0026gt;mysql-connector-java\u0026lt;/artifactId\u0026gt; \u0026lt;scope\u0026gt;runtime\u0026lt;/scope\u0026gt; \u0026lt;/dependency\u0026gt; 查看jar包，发现版本是8.0.30。将版本降至5.1，\n\u0026lt;!--Mysql依赖包--\u0026gt; \u0026lt;dependency\u0026gt; \u0026lt;groupId\u0026gt;mysql\u0026lt;/groupId\u0026gt; \u0026lt;artifactId\u0026gt;mysql-connector-java\u0026lt;/artifactId\u0026gt; \u0026lt;version\u0026gt;5.1.49\u0026lt;/version\u0026gt; \u0026lt;!-- \u0026lt;scope\u0026gt;runtime\u0026lt;/scope\u0026gt;--\u0026gt; \u0026lt;/dependency\u0026gt; 驱动名变成了com.mysql.jdbc.Driver，可以获取到正确的类。运行程序，生成sql时时间转换格式正确。\n可以看出，log4jdbc不支持MySQL连接8.0以上的。\n问题解决。",
+  "keywords": []
+}
+
+</script>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Hugo 0.111.2 with theme Tranquilpeak 0.5.3-BETA">
+<meta name="author" content="杨dd">
+<meta name="keywords" content="">
+<meta name="description" content="数据库：MySQ5.7
+最近新开了一个服务，上线后发现定时任务失效了。
+经排查，发现JPA生成sql的日期参数格式为&quot;dd/MM/yyyy HH:mm:ss&quot;。
+通常数据库查询的时间参数在生成SQL时，格式为&quot;yyyy-MM-dd HH:mm:ss&quot;。
+对源码进行调试，
+发现是调用到了log4jdbc的这个类，正常的应该是这个：
+接着调试，发现
+想要获取到正确的类，需要在驱动名称为com.mysql.jdbc.Driver。当时的驱动名称是com.mysql.cj.jdbc.Driver，所以用的是默认的类（未截图）。
+经排查，发现Mysql连接为
+&lt;!--Mysql依赖包--&gt; &lt;dependency&gt; &lt;groupId&gt;mysql&lt;/groupId&gt; &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt; &lt;scope&gt;runtime&lt;/scope&gt; &lt;/dependency&gt; 查看jar包，发现版本是8.0.30。将版本降至5.1，
+&lt;!--Mysql依赖包--&gt; &lt;dependency&gt; &lt;groupId&gt;mysql&lt;/groupId&gt; &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt; &lt;version&gt;5.1.49&lt;/version&gt; &lt;!-- &lt;scope&gt;runtime&lt;/scope&gt;--&gt; &lt;/dependency&gt; 驱动名变成了com.mysql.jdbc.Driver，可以获取到正确的类。运行程序，生成sql时时间转换格式正确。
+可以看出，log4jdbc不支持MySQL连接8.0以上的。
+问题解决。">
+
+
+<meta property="og:description" content="数据库：MySQ5.7
+最近新开了一个服务，上线后发现定时任务失效了。
+经排查，发现JPA生成sql的日期参数格式为&quot;dd/MM/yyyy HH:mm:ss&quot;。
+通常数据库查询的时间参数在生成SQL时，格式为&quot;yyyy-MM-dd HH:mm:ss&quot;。
+对源码进行调试，
+发现是调用到了log4jdbc的这个类，正常的应该是这个：
+接着调试，发现
+想要获取到正确的类，需要在驱动名称为com.mysql.jdbc.Driver。当时的驱动名称是com.mysql.cj.jdbc.Driver，所以用的是默认的类（未截图）。
+经排查，发现Mysql连接为
+&lt;!--Mysql依赖包--&gt; &lt;dependency&gt; &lt;groupId&gt;mysql&lt;/groupId&gt; &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt; &lt;scope&gt;runtime&lt;/scope&gt; &lt;/dependency&gt; 查看jar包，发现版本是8.0.30。将版本降至5.1，
+&lt;!--Mysql依赖包--&gt; &lt;dependency&gt; &lt;groupId&gt;mysql&lt;/groupId&gt; &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt; &lt;version&gt;5.1.49&lt;/version&gt; &lt;!-- &lt;scope&gt;runtime&lt;/scope&gt;--&gt; &lt;/dependency&gt; 驱动名变成了com.mysql.jdbc.Driver，可以获取到正确的类。运行程序，生成sql时时间转换格式正确。
+可以看出，log4jdbc不支持MySQL连接8.0以上的。
+问题解决。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记一次数据库查询时间参数转换格式错误的BUG">
+<meta name="twitter:title" content="记一次数据库查询时间参数转换格式错误的BUG">
+<meta property="og:url" content="http://localhost:1313/2023/03/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug/">
+<meta property="twitter:url" content="http://localhost:1313/2023/03/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug/">
+<meta property="og:site_name" content="我的开始">
+<meta property="og:description" content="数据库：MySQ5.7
+最近新开了一个服务，上线后发现定时任务失效了。
+经排查，发现JPA生成sql的日期参数格式为&quot;dd/MM/yyyy HH:mm:ss&quot;。
+通常数据库查询的时间参数在生成SQL时，格式为&quot;yyyy-MM-dd HH:mm:ss&quot;。
+对源码进行调试，
+发现是调用到了log4jdbc的这个类，正常的应该是这个：
+接着调试，发现
+想要获取到正确的类，需要在驱动名称为com.mysql.jdbc.Driver。当时的驱动名称是com.mysql.cj.jdbc.Driver，所以用的是默认的类（未截图）。
+经排查，发现Mysql连接为
+&lt;!--Mysql依赖包--&gt; &lt;dependency&gt; &lt;groupId&gt;mysql&lt;/groupId&gt; &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt; &lt;scope&gt;runtime&lt;/scope&gt; &lt;/dependency&gt; 查看jar包，发现版本是8.0.30。将版本降至5.1，
+&lt;!--Mysql依赖包--&gt; &lt;dependency&gt; &lt;groupId&gt;mysql&lt;/groupId&gt; &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt; &lt;version&gt;5.1.49&lt;/version&gt; &lt;!-- &lt;scope&gt;runtime&lt;/scope&gt;--&gt; &lt;/dependency&gt; 驱动名变成了com.mysql.jdbc.Driver，可以获取到正确的类。运行程序，生成sql时时间转换格式正确。
+可以看出，log4jdbc不支持MySQL连接8.0以上的。
+问题解决。">
+<meta name="twitter:description" content="数据库：MySQ5.7
+最近新开了一个服务，上线后发现定时任务失效了。
+经排查，发现JPA生成sql的日期参数格式为&quot;dd/MM/yyyy HH:mm:ss&quot;。
+通常数据库查询的时间参数在生成SQL时，格式为&quot;yyyy-MM-dd HH:mm:ss&quot;。
+对源码进行调试，
+发现是调用到了log4jdbc的这个类，正常的应该是这个：
+接着调试，发现
+想要获取到正确的类，需要在驱动名称为com.mysql.jdbc.Driver。当时的驱动名称是com.mysql.cj.jdbc.Driver，所以用的是默认的类（未截图）。
+经排查，发现Mysql连接为
+&lt;!--Mysql依赖包--&gt; &lt;dependency&gt; &lt;groupId&gt;mysql&lt;/groupId&gt; &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt; &lt;scope&gt;runtime&lt;/scope&gt; &lt;/dependency&gt; 查看jar包，发现版本是8.0.30。将版本降至5.1，
+&lt;!--Mysql依赖包--&gt; &lt;dependency&gt; &lt;groupId&gt;mysql&lt;/groupId&gt; &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt; &lt;version&gt;5.1.49&lt;/version&gt; &lt;!-- &lt;scope&gt;runtime&lt;/scope&gt;--&gt; &lt;/dependency&gt; 驱动名变成了com.mysql.jdbc.Driver，可以获取到正确的类。运行程序，生成sql时时间转换格式正确。
+可以看出，log4jdbc不支持MySQL连接8.0以上的。
+问题解决。">
+<meta property="og:locale" content="en-cn">
+
+  
+    <meta property="article:published_time" content="2023-03-12T00:57:52">
+  
+  
+    <meta property="article:modified_time" content="2023-03-12T00:57:52">
+  
+  
+  
+  
+
+
+<meta name="twitter:card" content="summary">
+
+
+
+
+
+
+
+  <meta property="og:image" content="https://www.gravatar.com/avatar/d09dc2d7aa5c467519e8af89f7b3d94c?s=640">
+  <meta property="twitter:image" content="https://www.gravatar.com/avatar/d09dc2d7aa5c467519e8af89f7b3d94c?s=640">
+
+
+
+
+
+
+    <title>记一次数据库查询时间参数转换格式错误的BUG</title>
+
+    <link rel="icon" href="http://localhost:1313/favicon.png">
+    
+
+    
+
+    <link rel="canonical" href="http://localhost:1313/2023/03/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug/">
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha512-H9jrZiiopUdsLpg94A333EfumgUBpO9MdbxStdeITo+KEIMaNfHNvwyjjDJb+ERPaRS6DpyRlKbvPUasNItRyw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    
+    
+    <link rel="stylesheet" href="http://localhost:1313/css/style-h6ccsoet3mzkbb0wngshlfbaweimexgqcxj0h5hu4h82olsdzz6wmqdkajm.min.css" />
+    
+    
+
+    
+      
+    
+    
+  </head>
+
+  <body>
+    <div id="blog">
+      <header id="header" data-behavior="4">
+  <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+  <div class="header-title">
+    <a class="header-title-link" href="http://localhost:1313/" aria-label="">我的开始</a>
+  </div>
+  
+    
+      <a class="header-right-picture "
+         href="http://localhost:1313/#about" aria-label="">
+    
+    
+    
+      
+        <img class="header-picture" src="https://www.gravatar.com/avatar/d09dc2d7aa5c467519e8af89f7b3d94c?s=90" alt="" />
+      
+    
+    </a>
+  
+</header>
+
+      <nav id="sidebar" data-behavior="4">
+  <div class="sidebar-container">
+    
+      <div class="sidebar-profile">
+        <a href="http://localhost:1313/#about" aria-label="">
+          <img class="sidebar-profile-picture" src="https://www.gravatar.com/avatar/d09dc2d7aa5c467519e8af89f7b3d94c?s=110" alt="" />
+        </a>
+        <h4 class="sidebar-profile-name">杨dd</h4>
+        
+          <h5 class="sidebar-profile-bio">坚持下去好吗</h5>
+        
+      </div>
+    
+    <ul class="sidebar-buttons">
+      
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="http://localhost:1313/" title="Home">
+    
+      <i class="sidebar-button-icon fas fa-lg fa-home" aria-hidden="true"></i>
+      
+      <span class="sidebar-button-desc">Home</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="http://localhost:1313/categories" title="Categories">
+    
+      <i class="sidebar-button-icon fas fa-lg fa-bookmark" aria-hidden="true"></i>
+      
+      <span class="sidebar-button-desc">Categories</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="http://localhost:1313/tags" title="Tags">
+    
+      <i class="sidebar-button-icon fas fa-lg fa-tags" aria-hidden="true"></i>
+      
+      <span class="sidebar-button-desc">Tags</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="http://localhost:1313/archives" title="Archives">
+    
+      <i class="sidebar-button-icon fas fa-lg fa-archive" aria-hidden="true"></i>
+      
+      <span class="sidebar-button-desc">Archives</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="http://localhost:1313/#about" title="About">
+    
+      <i class="sidebar-button-icon fas fa-lg fa-question" aria-hidden="true"></i>
+      
+      <span class="sidebar-button-desc">About</span>
+    </a>
+  </li>
+
+
+    </ul>
+    <ul class="sidebar-buttons">
+      
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://github.com/originyy" target="_blank" rel="noopener" title="GitHub">
+    
+      <i class="sidebar-button-icon fab fa-lg fa-github" aria-hidden="true"></i>
+      
+      <span class="sidebar-button-desc">GitHub</span>
+    </a>
+  </li>
+
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="https://stackoverflow.com/users/636472/kakawait" target="_blank" rel="noopener" title="Stack Overflow">
+    
+      <i class="sidebar-button-icon fab fa-lg fa-stack-overflow" aria-hidden="true"></i>
+      
+      <span class="sidebar-button-desc">Stack Overflow</span>
+    </a>
+  </li>
+
+
+    </ul>
+    <ul class="sidebar-buttons">
+      
+  <li class="sidebar-button">
+    
+      <a class="sidebar-button-link " href="http://localhost:1313/index.xml" title="RSS">
+    
+      <i class="sidebar-button-icon fas fa-lg fa-rss" aria-hidden="true"></i>
+      
+      <span class="sidebar-button-desc">RSS</span>
+    </a>
+  </li>
+
+
+    </ul>
+  </div>
+</nav>
+
+      
+
+      <div id="main" data-behavior="4"
+        class="
+               hasCoverMetaIn
+               ">
+        <article class="post" id="top">
+          
+          
+            <div class="post-header main-content-wrap text-left">
+  
+    <h1 class="post-title">
+      记一次数据库查询时间参数转换格式错误的BUG
+    </h1>
+  
+  
+  <div class="postShorten-meta post-meta">
+    
+      <time datetime="2023-03-12T00:57:52&#43;08:00">
+        
+   12, 2023
+
+      </time>
+    
+    
+  </div>
+
+</div>
+          
+          <div class="post-content markdown">
+            <div class="main-content-wrap">
+              <p>数据库：MySQ5.7</p>
+<p>最近新开了一个服务，上线后发现定时任务失效了。</p>
+<p>经排查，发现JPA生成sql的日期参数格式为<code>&quot;dd/MM/yyyy HH:mm:ss&quot;</code>。</p>
+<p>通常数据库查询的时间参数在生成SQL时，格式为<code>&quot;yyyy-MM-dd HH:mm:ss&quot;</code>。</p>
+<p>对源码进行调试，</p>
+<p><img src="http://localhost:1313/images/a-bug/2.png" alt="这是图片" title="2"></p>
+<p>发现是调用到了log4jdbc的这个类，正常的应该是这个：</p>
+<p><img src="http://localhost:1313/images/a-bug/1.png" alt="这是图片" title="1"></p>
+<p>接着调试，发现</p>
+<p><img src="http://localhost:1313/images/a-bug/3.png" alt="这是图片" title="3"></p>
+<p>想要获取到正确的类，需要在驱动名称为com.mysql.jdbc.Driver。当时的驱动名称是com.mysql.cj.jdbc.Driver，所以用的是默认的类（未截图）。</p>
+<p>经排查，发现Mysql连接为</p>
+<pre><code>	&lt;!--Mysql依赖包--&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;mysql&lt;/groupId&gt;
+        &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt;
+        &lt;scope&gt;runtime&lt;/scope&gt;
+    &lt;/dependency&gt;
+</code></pre>
+<p>查看jar包，发现版本是8.0.30。将版本降至5.1，</p>
+<pre><code>	&lt;!--Mysql依赖包--&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;mysql&lt;/groupId&gt;
+        &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt;
+        &lt;version&gt;5.1.49&lt;/version&gt;
+        &lt;!--            &lt;scope&gt;runtime&lt;/scope&gt;--&gt;
+    &lt;/dependency&gt;
+</code></pre>
+<p>驱动名变成了com.mysql.jdbc.Driver，可以获取到正确的类。运行程序，生成sql时时间转换格式正确。</p>
+<p>可以看出，log4jdbc不支持MySQL连接8.0以上的。</p>
+<p>问题解决。</p>
+
+              
+
+
+            </div>
+          </div>
+          <div id="post-footer" class="post-footer main-content-wrap">
+            
+              
+            
+            
+<div class="post-actions-wrap">
+  <nav >
+    <ul class="post-actions post-action-nav">
+      
+        <li class="post-action">
+          
+            <a class="post-action-btn btn btn--default tooltip--top" href="http://localhost:1313/2023/03/stream_mq/" data-tooltip="Stream_mq" aria-label=": Stream_mq">
+          
+              <i class="fa fa-angle-left"></i>
+              <span class="hide-xs hide-sm text-small icon-ml"></span>
+            </a>
+        </li>
+        <li class="post-action">
+          
+            <a class="post-action-btn btn btn--default tooltip--top" href="http://localhost:1313/2023/03/my-first-post/" data-tooltip="My First Post" aria-label=": My First Post">
+          
+              <span class="hide-xs hide-sm text-small icon-mr"></span>
+              <i class="fa fa-angle-right"></i>
+            </a>
+        </li>
+      
+    </ul>
+  </nav>
+<ul class="post-actions post-action-share" >
+  
+    <li class="post-action hide-lg hide-md hide-sm">
+      <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions" aria-label="">
+        <i class="fa fa-share-alt" aria-hidden="true"></i>
+      </a>
+    </li>
+    
+      <li class="post-action hide-xs">
+        <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:1313/2023/03/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug/" title="" aria-label="">
+          <i class="fab fa-facebook-square" aria-hidden="true"></i>
+        </a>
+      </li>
+    
+      <li class="post-action hide-xs">
+        <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://localhost:1313/2023/03/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug/" title="" aria-label="">
+          <i class="fab fa-twitter" aria-hidden="true"></i>
+        </a>
+      </li>
+    
+      <li class="post-action hide-xs">
+        <a class="post-action-btn btn btn--default" target="new" href="https://www.linkedin.com/sharing/share-offsite/?url=http://localhost:1313/2023/03/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug/" title="" aria-label="">
+          <i class="fab fa-linkedin" aria-hidden="true"></i>
+        </a>
+      </li>
+    
+  
+  
+    <li class="post-action">
+      <a class="post-action-btn btn btn--default" href="#disqus_thread" aria-label="">
+        <i class="far fa-comment"></i>
+      </a>
+    </li>
+  
+  <li class="post-action">
+    
+      <a class="post-action-btn btn btn--default" href="#top" aria-label="">
+      <i class="fa fa-arrow-up" aria-hidden="true"></i>
+    
+    </a>
+  </li>
+</ul>
+</div>
+
+
+            
+  
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+    <script type="text/javascript">
+      var disqus_config = function() {
+        this.page.url = 'http:\/\/localhost:1313\/2023\/03\/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug\/';
+        
+          this.page.identifier = '\/2023\/03\/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug\/'
+        
+      };
+      (function() {
+        
+        
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+          document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+          return;
+        }
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        var disqus_shortname = 'hugo-tranquilpeak-theme';
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+  
+
+
+          </div>
+        </article>
+        <footer id="footer" class="main-content-wrap">
+  <span class="copyrights">
+    &copy; 2023 杨dd. 
+  </span>
+</footer>
+
+      </div>
+      <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+        
+<div class="post-actions-wrap">
+  <nav >
+    <ul class="post-actions post-action-nav">
+      
+        <li class="post-action">
+          
+            <a class="post-action-btn btn btn--default tooltip--top" href="http://localhost:1313/2023/03/stream_mq/" data-tooltip="Stream_mq" aria-label=": Stream_mq">
+          
+              <i class="fa fa-angle-left"></i>
+              <span class="hide-xs hide-sm text-small icon-ml"></span>
+            </a>
+        </li>
+        <li class="post-action">
+          
+            <a class="post-action-btn btn btn--default tooltip--top" href="http://localhost:1313/2023/03/my-first-post/" data-tooltip="My First Post" aria-label=": My First Post">
+          
+              <span class="hide-xs hide-sm text-small icon-mr"></span>
+              <i class="fa fa-angle-right"></i>
+            </a>
+        </li>
+      
+    </ul>
+  </nav>
+<ul class="post-actions post-action-share" >
+  
+    <li class="post-action hide-lg hide-md hide-sm">
+      <a class="post-action-btn btn btn--default btn-open-shareoptions" href="#btn-open-shareoptions" aria-label="">
+        <i class="fa fa-share-alt" aria-hidden="true"></i>
+      </a>
+    </li>
+    
+      <li class="post-action hide-xs">
+        <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:1313/2023/03/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug/" title="" aria-label="">
+          <i class="fab fa-facebook-square" aria-hidden="true"></i>
+        </a>
+      </li>
+    
+      <li class="post-action hide-xs">
+        <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://localhost:1313/2023/03/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug/" title="" aria-label="">
+          <i class="fab fa-twitter" aria-hidden="true"></i>
+        </a>
+      </li>
+    
+      <li class="post-action hide-xs">
+        <a class="post-action-btn btn btn--default" target="new" href="https://www.linkedin.com/sharing/share-offsite/?url=http://localhost:1313/2023/03/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug/" title="" aria-label="">
+          <i class="fab fa-linkedin" aria-hidden="true"></i>
+        </a>
+      </li>
+    
+  
+  
+    <li class="post-action">
+      <a class="post-action-btn btn btn--default" href="#disqus_thread" aria-label="">
+        <i class="far fa-comment"></i>
+      </a>
+    </li>
+  
+  <li class="post-action">
+    
+      <a class="post-action-btn btn btn--default" href="#top" aria-label="">
+      <i class="fa fa-arrow-up" aria-hidden="true"></i>
+    
+    </a>
+  </li>
+</ul>
+</div>
+
+
+      </div>
+      
+<div id="share-options-bar" class="share-options-bar" data-behavior="4">
+  <i id="btn-close-shareoptions" class="fa fa-times"></i>
+  <ul class="share-options">
+    
+      <li class="share-option">
+        <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Flocalhost%3A1313%2F2023%2F03%2F%25E8%25AE%25B0%25E4%25B8%2580%25E6%25AC%25A1%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E6%259F%25A5%25E8%25AF%25A2%25E6%2597%25B6%25E9%2597%25B4%25E5%258F%2582%25E6%2595%25B0%25E8%25BD%25AC%25E6%258D%25A2%25E6%25A0%25BC%25E5%25BC%258F%25E9%2594%2599%25E8%25AF%25AF%25E7%259A%2584bug%2F" aria-label="">
+          <i class="fab fa-facebook-square" aria-hidden="true"></i><span></span>
+        </a>
+      </li>
+    
+      <li class="share-option">
+        <a class="share-option-btn" target="new" href="https://twitter.com/intent/tweet?text=http%3A%2F%2Flocalhost%3A1313%2F2023%2F03%2F%25E8%25AE%25B0%25E4%25B8%2580%25E6%25AC%25A1%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E6%259F%25A5%25E8%25AF%25A2%25E6%2597%25B6%25E9%2597%25B4%25E5%258F%2582%25E6%2595%25B0%25E8%25BD%25AC%25E6%258D%25A2%25E6%25A0%25BC%25E5%25BC%258F%25E9%2594%2599%25E8%25AF%25AF%25E7%259A%2584bug%2F" aria-label="">
+          <i class="fab fa-twitter" aria-hidden="true"></i><span></span>
+        </a>
+      </li>
+    
+      <li class="share-option">
+        <a class="share-option-btn" target="new" href="https://www.linkedin.com/sharing/share-offsite/?url=http%3A%2F%2Flocalhost%3A1313%2F2023%2F03%2F%25E8%25AE%25B0%25E4%25B8%2580%25E6%25AC%25A1%25E6%2595%25B0%25E6%258D%25AE%25E5%25BA%2593%25E6%259F%25A5%25E8%25AF%25A2%25E6%2597%25B6%25E9%2597%25B4%25E5%258F%2582%25E6%2595%25B0%25E8%25BD%25AC%25E6%258D%25A2%25E6%25A0%25BC%25E5%25BC%258F%25E9%2594%2599%25E8%25AF%25AF%25E7%259A%2584bug%2F" aria-label="">
+          <i class="fab fa-linkedin" aria-hidden="true"></i><span></span>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+<div id="share-options-mask" class="share-options-mask"></div>
+
+
+    </div>
+    
+    <div id="about">
+  <div id="about-card">
+    <div id="about-btn-close">
+      <i class="fa fa-times"></i>
+    </div>
+    
+      <img id="about-card-picture" src="https://www.gravatar.com/avatar/d09dc2d7aa5c467519e8af89f7b3d94c?s=110" alt="" />
+    
+    <h4 id="about-card-name">杨dd</h4>
+    
+      <div id="about-card-bio">坚持下去好吗</div>
+    
+    
+      <div id="about-card-job">
+        <i class="fa fa-briefcase"></i>
+        <br/>
+        CRUD BOY
+      </div>
+    
+    
+      <div id="about-card-location">
+        <i class="fa fa-map-marker-alt"></i>
+        <br/>
+        中国
+      </div>
+    
+  </div>
+</div>
+
+    
+
+    
+  
+    
+      <div id="cover" style="background-image:url('http://localhost:1313/images/cover.jpg');"></div>
+    
+  
+
+
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/highlight.min.js" integrity="sha512-z+/WWfyD5tccCukM4VvONpEtLmbAm5LDu7eKiyMQJ9m7OfPEDL7gENyDRL3Yfe8XAuGsS2fS4xSMnl6d30kqGQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha512-uURl+ZXMBrF4AwGaWmEetzrd+J5/8NRkWAvJx5sbPSSuOb0bZLqf+tOzniObO00BjHa/dD7gub9oCGMLPQHtQA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+<script src="http://localhost:1313/js/script-yqzy9wdlzix4lbbwdnzvwx3egsne77earqmn73v9uno8aupuph8wfguccut.min.js"></script>
+
+
+  
+    <script async crossorigin="anonymous" defer integrity="sha512-gE8KAQyFIzV1C9+GZ8TKJHZS2s+n7EjNtC+IMRn1l5+WYJTHOODUM6JSjZhFhqXmc7bG8Av6XXpckA4tYhflnw==" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/apache.min.js"></script>
+  
+
+  
+    <script async crossorigin="anonymous" defer integrity="sha512-EWROca+bote+7Oaaar1F6y74iZj1r1F9rm/ly7o+/FwJopbBaWtsFDmaKoZDd3QiGU2pGacBirHJNivmGLYrow==" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/go.min.js"></script>
+  
+
+  
+    <script async crossorigin="anonymous" defer integrity="sha512-GDVzAn0wpx1yVtQsRWmFc6PhJiLBPdUic+h4GWgljBh904O3JU10fk9EKNpVyIoPqkFn54rgL2QBG4BmUTMpiQ==" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/http.min.js"></script>
+  
+
+  
+    <script async crossorigin="anonymous" defer integrity="sha512-UgZlma8NzkrDb/NWgmLIcTrH7i/CSnLLDRFqCSNF5NGPpjKmzyM25qcoXGOup8+cDakKyaiTDd7N4dyH4YT+IA==" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/less.min.js"></script>
+  
+
+  
+    <script async crossorigin="anonymous" defer integrity="sha512-lot9koe73sfXIrUvIPM/UEhuMciN56RPyBdOyZgfO53P2lkWyyXN7J+njcxIIBRV+nVDQeiWtiXg+bLAJZDTfg==" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/nginx.min.js"></script>
+  
+
+  
+    <script async crossorigin="anonymous" defer integrity="sha512-Zd3e7XxHP00TD0Imr0PIfeM0fl0v95kMWuhyAS3Wn1UTSXTkz0OhtRgBAr4JlmADRgiXr4x7lpeUdqaGN8xIog==" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/puppet.min.js"></script>
+  
+
+  
+    <script async crossorigin="anonymous" defer integrity="sha512-qtqDO052iXMSP+5d/aE/jMtL9vIIGvONgTJziC2K/ZIB1yEGa55WVxGE9/08rSQ62EoDifS9SWVGZ7ihSLhzMA==" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/scss.min.js"></script>
+  
+
+  
+    <script async crossorigin="anonymous" defer integrity="sha512-1NmkjnEDnwwwcu28KoQF8vs3oaPFokQHbmbtwGhFfeDsQZtVFI8zW2aE9O8yMYdpdyKV/5blE4pSWw4Z/Sv97w==" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/stylus.min.js"></script>
+  
+
+  
+    <script async crossorigin="anonymous" defer integrity="sha512-B2wSfruPjr8EJL6IIzQr1eAuDwrsfIfccNf/LCEdxELCgC/S/ZMt/Uvk80aD79m7IqOqW+Sw8nbkvha20yZpzg==" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/swift.min.js"></script>
+  
+
+  
+    <script async crossorigin="anonymous" defer integrity="sha512-28oDiQZGKUVN6wQ7PSLPNipOcmkCALXKwOi7bnkyFf8QiMZQxG9EQoy/iiNx6Zxj2cG2SbVa4dXKigQhu7GiFw==" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/yaml.min.js"></script>
+  
+
+
+<script>
+$(document).ready(function() {
+  hljs.configure({ classPrefix: '', useBR: false });
+  $('pre.code-highlight > code, pre > code').each(function(i, block) {
+    if (!$(this).hasClass('codeblock')) {
+      $(this).addClass('codeblock');
+    }
+    hljs.highlightBlock(block);
+  });
+});
+</script>
+
+
+
+
+    
+  </body>
+</html>
+
