@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on 我的开始</title>
+    <link>http://localhost:65020/posts/</link>
+    <description>Recent content in Posts on 我的开始</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-cn</language>
+    <lastBuildDate>Sun, 12 Mar 2023 03:22:17 +0800</lastBuildDate><atom:link href="http://localhost:65020/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Stream_mq</title>
+      <link>http://localhost:65020/2023/03/stream_mq/</link>
+      <pubDate>Sun, 12 Mar 2023 03:22:17 +0800</pubDate>
+      
+      <guid>http://localhost:65020/2023/03/stream_mq/</guid>
+      <description>由于Spring Cloud Stream的注解已过期@Deprecated ，需要升级到更高版本。并且目前目前mq没有做到可靠消费，在服务中断等特殊情况会把消息丢失。现需要对Spring Cloud Stream和MQ进行升级。
+写文档时GA版本有4.0.1和3.2.4：
+4.0.1遇到了一个较为麻烦的问题，疑似Bean加载顺序有问题，具体需要深入排查。
+所以选择了3.2.4。
+pom依赖：
+&amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;org.springframework.cloud&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;spring-cloud-starter-stream-rabbit&amp;lt;/artifactId&amp;gt; &amp;lt;version&amp;gt;3.2.4&amp;lt;/version&amp;gt; &amp;lt;/dependency&amp;gt; &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;org.springframework.cloud&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;spring-cloud-stream&amp;lt;/artifactId&amp;gt; &amp;lt;version&amp;gt;3.2.4&amp;lt;/version&amp;gt; &amp;lt;/dependency&amp;gt; 3.2.4也有一个bug，会有一处地方直接传null，详情可看Spring cloud stream 3.2.3 FunctionInvocationHelper throw NPE Issue #2384 · spring-cloud/spring-cloud-stream (github.com)
+需要替换function依赖。
+&amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;org.springframework.cloud&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;spring-cloud-function-context&amp;lt;/artifactId&amp;gt; &amp;lt;version&amp;gt;3.2.4&amp;lt;/version&amp;gt; &amp;lt;/dependency&amp;gt; 旧配置@EnableBinding 会和函数式的写法冲突，需要去除，所以升级后不再兼容旧写法。
+发布者需要手动发布，同时用confirm实现可靠发布
+@Service @RequiredArgsConstructor @Slf4j public class EventPublisher { private final StreamBridge streamBridge; /** * @param event * @return void * @throws * @description * @author yang * @date 2022/7/12 11:41 */ public void pushEvent(String channel, Object event) { MyCorrelationData corr = new MyCorrelationData(UUID.</description>
+    </item>
+    
+    <item>
+      <title>记一次数据库查询时间参数转换格式错误的BUG</title>
+      <link>http://localhost:65020/2023/03/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug/</link>
+      <pubDate>Sun, 12 Mar 2023 00:57:52 +0800</pubDate>
+      
+      <guid>http://localhost:65020/2023/03/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4%E5%8F%82%E6%95%B0%E8%BD%AC%E6%8D%A2%E6%A0%BC%E5%BC%8F%E9%94%99%E8%AF%AF%E7%9A%84bug/</guid>
+      <description>数据库：MySQ5.7
+最近新开了一个服务，上线后发现定时任务失效了。
+经排查，发现JPA生成sql的日期参数格式为&amp;quot;dd/MM/yyyy HH:mm:ss&amp;quot;。
+通常数据库查询的时间参数在生成SQL时，格式为&amp;quot;yyyy-MM-dd HH:mm:ss&amp;quot;。
+对源码进行调试，
+发现是调用到了log4jdbc的这个类，正常的应该是这个：
+接着调试，发现
+想要获取到正确的类，需要在驱动名称为com.mysql.jdbc.Driver。当时的驱动名称是com.mysql.cj.jdbc.Driver，所以用的是默认的类（未截图）。
+经排查，发现Mysql连接为
+&amp;lt;!--Mysql依赖包--&amp;gt; &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;mysql&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;mysql-connector-java&amp;lt;/artifactId&amp;gt; &amp;lt;scope&amp;gt;runtime&amp;lt;/scope&amp;gt; &amp;lt;/dependency&amp;gt; 查看jar包，发现版本是8.0.30。将版本降至5.1，
+&amp;lt;!--Mysql依赖包--&amp;gt; &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;mysql&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;mysql-connector-java&amp;lt;/artifactId&amp;gt; &amp;lt;version&amp;gt;5.1.49&amp;lt;/version&amp;gt; &amp;lt;!-- &amp;lt;scope&amp;gt;runtime&amp;lt;/scope&amp;gt;--&amp;gt; &amp;lt;/dependency&amp;gt; 驱动名变成了com.mysql.jdbc.Driver，可以获取到正确的类。运行程序，生成sql时时间转换格式正确。
+可以看出，log4jdbc不支持MySQL连接8.0以上的。
+问题解决。</description>
+    </item>
+    
+    <item>
+      <title>My First Post</title>
+      <link>http://localhost:65020/2023/03/my-first-post/</link>
+      <pubDate>Thu, 09 Mar 2023 02:09:22 +0800</pubDate>
+      
+      <guid>http://localhost:65020/2023/03/my-first-post/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>
