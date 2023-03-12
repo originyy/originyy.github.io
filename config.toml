@@ -15,7 +15,7 @@
 baseURL = "https://originyy.github.io/"
 languageCode = "en-cn"
 defaultContentLanguage = "en-cn"
-title = "Hugo tranquilpeak theme"
+title = "我的开始"
 theme = "hugo-tranquilpeak-theme"
 disqusShortname = "hugo-tranquilpeak-theme"
 # googleAnalytics = "UA-123-45"
@@ -44,10 +44,10 @@ canonifyurls = true
 # Author
 # ------
 [author]
-  name = "Firstname Lastname"
-  bio = "Super bio with markdown support **COOL**"
-  job = "Your job title"
-  location = "France"
+  name = "杨"
+  bio = "坚持下去好吗"
+  job = "CRUD BOY"
+  location = "中国"
   # Your Gravatar email. Overwrite `author.picture` everywhere in the blog
   gravatarEmail = "thibaud.lepretre@gmail.com"
   # Your profile picture
@@ -97,7 +97,7 @@ canonifyurls = true
   identifier = "github"
   name = "GitHub"
   pre = "<i class=\"sidebar-button-icon fab fa-lg fa-github\" aria-hidden=\"true\"></i>"
-  url = "https://github.com/kakawait"
+  url = "https://github.com/originyy"
 [[menu.links]]
   weight = 2
   identifier = "stackoverflow"
